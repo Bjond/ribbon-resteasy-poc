@@ -30,7 +30,7 @@ import io.netty.buffer.ByteBuf;
  */
 
 public interface IRestService {
-    @TemplateName("ping")
+    //@TemplateName("ping")
     @Http(
           method = HttpMethod.GET,
           uri = "/bjond-resteasy-poc/services/poc/ping"

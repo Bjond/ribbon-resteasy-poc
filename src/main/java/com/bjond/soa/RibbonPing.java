@@ -47,17 +47,6 @@ public class RibbonPing {
     public static void main(String[] args) {
         System.out.println("RibbonPing has been invoked printf");
         
-        // IRule rule = new AvailabilityFilteringRule();
-        // ServerList<DiscoveryEnabledServer> list = new DiscoveryEnabledNIWSServerList("sampleservice.mydomain.net");
-        // ServerListFilter<DiscoveryEnabledServer> filter = new ZoneAffinityServerListFilter<DiscoveryEnabledServer>();
-        // ZoneAwareLoadBalancer<DiscoveryEnabledServer> lb = LoadBalancerBuilder.<DiscoveryEnabledServer>newBuilder()
-        //         .withDynamicServerList(list)
-        //         .withRule(rule)
-        //         .withServerListFilter(filter)
-        //         .buildDynamicServerListLoadBalancer();   
-        // DiscoveryEnabledServer server = (DiscoveryEnabledServer)lb.chooseServer();
-
-
         // initialize the client
         DiscoveryManager.getInstance().initComponent(
                 new MyDataCenterInstanceConfig(),
@@ -77,7 +66,7 @@ public class RibbonPing {
         }
 
         System.out.println("Found an instance of example service to talk to from eureka: "
-                + nextServerInfo.getVIPAddress() + ":" + nextServerInfo.getPort());
+                           + nextServerInfo.getVIPAddress() + ":" + nextServerInfo.getPort());
 
         System.out.println("healthCheckUrl: " + nextServerInfo.getHealthCheckUrl());
         System.out.println("override: " + nextServerInfo.getOverriddenStatus());
@@ -90,11 +79,16 @@ public class RibbonPing {
         System.out.println("Make a ping invocation.");
         Observable<ByteBuf> result = restService.ping().observe();
         result.materialize().toBlocking().last();
+
+        result = restService.ping().observe();
+        result = restService.ping().observe();
+        result.materialize().toBlocking().last();
+
         System.out.println("Made a ping invocation successfully.");
 
         // finally shutdown
         DiscoveryManager.getInstance().getEurekaClient().shutdown();
-        
+        System.out.println("Shutting down");
     }    
 
 
