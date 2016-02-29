@@ -12,7 +12,7 @@
  *
  */
 
-package com.bjond.adapter.push;
+package com.bjond.soa;
 
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;

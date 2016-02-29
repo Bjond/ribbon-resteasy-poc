@@ -37,7 +37,10 @@ configurations {
 
 dependencies {
 
+    // Eureka client used to connect to a Eureka server.
+    compile 'com.netflix.eureka:eureka-client:1.4.2'
 
+    
     // Resteasy client libraries
     providedCompile 'org.jboss.resteasy:resteasy-client:3.0.14.Final'
     providedCompile 'org.jboss.resteasy:resteasy-multipart-provider:3.0.14.Final'
