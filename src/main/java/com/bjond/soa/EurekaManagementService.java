@@ -107,7 +107,7 @@ public class EurekaManagementService {
             try {
                 nextServerInfo = eurekaClient.getNextServerFromEureka(vipAddress, false);
             } catch (Throwable e) {
-                log.error("error", e);
+                // log.error("error", e);
                 log.info("Waiting ... verifying service registration with eureka ...");
 
                 try {
