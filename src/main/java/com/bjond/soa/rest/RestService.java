@@ -12,7 +12,7 @@
  *
  */
 
-package com.bjond.adapter.push.services;
+package com.bjond.soa.rest;
 
 
 
