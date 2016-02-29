@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<web-app version="3.0" xmlns="http://java.sun.com/xml/ns/javaee"
+	     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	     xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+	     metadata-complete="false" id="WebApp_ID" >
+
+  <!-- Infinispan session replication: https://blog.openshift.com/how-to-host-your-java-ee-application-with-auto-scaling/ -->
+  <!-- <distributable/> -->
+  
+	<welcome-file-list>
+		<welcome-file>/index.html</welcome-file>
+		<welcome-file>/</welcome-file>
+	</welcome-file-list>
+
+    <!-- programmatic control session.setMaxInactiveInterval(15 * 60); //15 minutes -->
+    <session-config>
+      <session-timeout>15</session-timeout>
+    </session-config>
+
+</web-app>
+
