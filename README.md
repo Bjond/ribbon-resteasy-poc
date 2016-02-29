@@ -1,4 +1,4 @@
-![alt text](https://github.com/Bjond/bjond-resteasy-poc/blob/master/images/bjondhealthlogo-whitegrey.png "Bjönd Inc.")
+![alt text](https://github.com/Bjond/ribbon-resteasy-poc/blob/master/images/bjondhealthlogo-whitegrey.png "Bjönd Inc.")
 
 [![][travis img]][travis]
 
