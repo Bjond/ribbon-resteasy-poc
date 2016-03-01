@@ -89,6 +89,7 @@ public class RibbonPing {
         // finally shutdown
         DiscoveryManager.getInstance().getEurekaClient().shutdown();
         System.out.println("Shutting down");
+        DiscoveryManager.getInstance().shutdownComponent();
     }    
 
 
