@@ -23,11 +23,13 @@ import com.google.inject.Scopes;
 import com.netflix.appinfo.EurekaInstanceConfig;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.appinfo.providers.MyDataCenterInstanceConfigProvider;
+import com.netflix.config.ConfigurationManager;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.guice.EurekaModule;
 import com.netflix.governator.InjectorBuilder;
 import com.netflix.governator.LifecycleInjector;
 import com.netflix.ribbon.Ribbon;
+import com.netflix.ribbon.proxy.ProxyLifeCycle;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
@@ -95,14 +97,22 @@ public class RibbonPing {
         result.materialize().toBlocking().last();
 
         result = restService.ping().observe();
+        result.materialize().toBlocking().last();
+        
         result = restService.ping().observe();
         result.materialize().toBlocking().last();
 
         System.out.println("Made a ping invocation successfully.");
 
         // finally shutdown
+        ((ProxyLifeCycle) restService).shutdown();
         eurekaClient.shutdown();
+        injector.shutdown();
+        ConfigurationManager.getConfigInstance().clear();
         System.out.println("Shutting down");
+
+        // there is some daemon thread presumably in eureka-client I can't find.
+        System.exit(0);
     }    
 
 
