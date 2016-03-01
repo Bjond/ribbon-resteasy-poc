@@ -18,10 +18,15 @@ package com.bjond.soa;
 
 
 import com.bjond.soa.proxy.IRestService;
+import com.google.inject.AbstractModule;
+import com.google.inject.Scopes;
+import com.netflix.appinfo.EurekaInstanceConfig;
 import com.netflix.appinfo.InstanceInfo;
-import com.netflix.appinfo.MyDataCenterInstanceConfig;
-import com.netflix.discovery.DefaultEurekaClientConfig;
-import com.netflix.discovery.DiscoveryManager;
+import com.netflix.appinfo.providers.MyDataCenterInstanceConfigProvider;
+import com.netflix.discovery.EurekaClient;
+import com.netflix.discovery.guice.EurekaModule;
+import com.netflix.governator.InjectorBuilder;
+import com.netflix.governator.LifecycleInjector;
 import com.netflix.ribbon.Ribbon;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -46,25 +51,34 @@ public class RibbonPing {
     @SuppressFBWarnings(value="DLS_DEAD_LOCAL_STORE", justification="")
     public static void main(String[] args) {
         System.out.println("RibbonPing has been invoked printf");
+
         
-        // initialize the client
-        DiscoveryManager.getInstance().initComponent(
-                new MyDataCenterInstanceConfig(),
-                new DefaultEurekaClientConfig());
+
+        final LifecycleInjector injector = InjectorBuilder
+            .fromModule(new EurekaModule())
+            .overrideWith(new AbstractModule() {
+                    @Override
+                    protected void configure() {
+                        // the default impl of EurekaInstanceConfig is CloudInstanceConfig, which we only want in an AWS
+                        // environment. Here we override that by binding MyDataCenterInstanceConfig to EurekaInstanceConfig.
+                        bind(EurekaInstanceConfig.class).toProvider(MyDataCenterInstanceConfigProvider.class).in(Scopes.SINGLETON);
+                    }
+                })
+            .createInjector();
 
         // this is the vip address for the example service to talk to as defined in conf/sample-eureka-service.properties
         String vipAddress = "sampleservice.mydomain.net";
 
+        final EurekaClient eurekaClient = injector.getInstance(EurekaClient.class);
         InstanceInfo nextServerInfo = null;
         try {
-            nextServerInfo = DiscoveryManager.getInstance()
-                    .getEurekaClient()
-                    .getNextServerFromEureka(vipAddress, false);
+            nextServerInfo = eurekaClient.getNextServerFromEureka(vipAddress, false);
         } catch (Exception e) {
             System.err.println("Cannot get an instance of example service to talk to from eureka: "+ e.getMessage());
             System.exit(-1);
         }
 
+        
         System.out.println("Found an instance of example service to talk to from eureka: "
                            + nextServerInfo.getVIPAddress() + ":" + nextServerInfo.getPort());
 
@@ -87,9 +101,8 @@ public class RibbonPing {
         System.out.println("Made a ping invocation successfully.");
 
         // finally shutdown
-        DiscoveryManager.getInstance().getEurekaClient().shutdown();
+        eurekaClient.shutdown();
         System.out.println("Shutting down");
-        DiscoveryManager.getInstance().shutdownComponent();
     }    
 
 

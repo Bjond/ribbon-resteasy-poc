@@ -39,7 +39,9 @@ dependencies {
 
     // Eureka client used to connect to a Eureka server.
     compile 'com.netflix.eureka:eureka-client:1.4.2'
+    compile 'com.netflix.governator:governator:1.12.9'
 
+    
     // Nexflix Ribbon
     compile 'com.netflix.ribbon:ribbon:2.1.2'
     compile 'com.netflix.ribbon:ribbon-eureka:2.1.2'
