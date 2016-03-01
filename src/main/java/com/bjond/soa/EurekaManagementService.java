@@ -22,13 +22,17 @@ import javax.annotation.PreDestroy;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
 
+import com.google.inject.AbstractModule;
+import com.google.inject.Scopes;
 import com.netflix.appinfo.ApplicationInfoManager;
+import com.netflix.appinfo.EurekaInstanceConfig;
 import com.netflix.appinfo.InstanceInfo;
-import com.netflix.appinfo.MyDataCenterInstanceConfig;
+import com.netflix.appinfo.providers.MyDataCenterInstanceConfigProvider;
 import com.netflix.config.DynamicPropertyFactory;
-import com.netflix.discovery.DefaultEurekaClientConfig;
-import com.netflix.discovery.DiscoveryManager;
 import com.netflix.discovery.EurekaClient;
+import com.netflix.discovery.guice.EurekaModule;
+import com.netflix.governator.InjectorBuilder;
+import com.netflix.governator.LifecycleInjector;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -53,13 +57,22 @@ public class EurekaManagementService {
     @PostConstruct
     protected  void startService() {
         configInstance         = com.netflix.config.DynamicPropertyFactory.getInstance();
-        ApplicationInfoManager applicationInfoManager = ApplicationInfoManager.getInstance();
 
-        DiscoveryManager.getInstance().initComponent(
-                                                     new MyDataCenterInstanceConfig(),
-                                                     new DefaultEurekaClientConfig());
+        final LifecycleInjector injector = InjectorBuilder
+            .fromModule(new EurekaModule())
+            .overrideWith(new AbstractModule() {
+                    @Override
+                    protected void configure() {
+                        // the default impl of EurekaInstanceConfig is CloudInstanceConfig, which we only want in an AWS
+                        // environment. Here we override that by binding MyDataCenterInstanceConfig to EurekaInstanceConfig.
+                        bind(EurekaInstanceConfig.class).toProvider(MyDataCenterInstanceConfigProvider.class).in(Scopes.SINGLETON);
+                    }
+                })
+            .createInjector();
 
-        eurekaClient = DiscoveryManager.getInstance().getEurekaClient();
+        final EurekaClient eurekaClient = injector.getInstance(EurekaClient.class);
+        
+        ApplicationInfoManager applicationInfoManager = injector.getInstance(ApplicationInfoManager.class);
 
         // A good practice is to register as STARTING and only change status to UP
         // after the service is ready to receive traffic
