@@ -29,6 +29,7 @@ import com.netflix.discovery.guice.EurekaModule;
 import com.netflix.governator.InjectorBuilder;
 import com.netflix.governator.LifecycleInjector;
 import com.netflix.ribbon.Ribbon;
+import com.netflix.ribbon.RibbonRequest;
 import com.netflix.ribbon.proxy.ProxyLifeCycle;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -51,7 +52,7 @@ public class RibbonPing {
 
     
     @SuppressFBWarnings(value="DLS_DEAD_LOCAL_STORE", justification="")
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         System.out.println("RibbonPing has been invoked printf");
 
         
@@ -92,16 +93,11 @@ public class RibbonPing {
         
         IRestService restService = Ribbon.from(IRestService.class);
 
-        System.out.println("Make a ping invocation.");
-        Observable<ByteBuf> result = restService.ping().observe();
-        result.materialize().toBlocking().last();
-
-        result = restService.ping().observe();
-        result.materialize().toBlocking().last();
         
-        result = restService.ping().observe();
-        result.materialize().toBlocking().last();
-
+        ByteBuf buffer = restService.ping().execute();
+        byte[] bytes = new byte[buffer.readableBytes()];
+        buffer.readBytes(bytes);
+        System.out.println("AS ARRAY: " + new String(bytes, "UTF-8"));
         System.out.println("Made a ping invocation successfully.");
 
         // finally shutdown

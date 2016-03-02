@@ -18,7 +18,6 @@ package com.bjond.soa.proxy;
 import com.netflix.ribbon.RibbonRequest;
 import com.netflix.ribbon.proxy.annotation.Http;
 import com.netflix.ribbon.proxy.annotation.Http.HttpMethod;
-import com.netflix.ribbon.proxy.annotation.TemplateName;
 
 import io.netty.buffer.ByteBuf;
 
@@ -30,8 +29,7 @@ import io.netty.buffer.ByteBuf;
  */
 
 public interface IRestService {
-    //@TemplateName("ping")
-    @Http(
+      @Http(
           method = HttpMethod.GET,
           uri = "/bjond-resteasy-poc/services/poc/ping"
           )
