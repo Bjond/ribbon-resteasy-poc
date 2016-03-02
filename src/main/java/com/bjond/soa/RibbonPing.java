@@ -54,8 +54,6 @@ public class RibbonPing {
     public static void main(String[] args) throws Exception {
         System.out.println("RibbonPing has been invoked printf");
 
-        
-
         final LifecycleInjector injector = InjectorBuilder
             .fromModule(new EurekaModule())
             .overrideWith(new AbstractModule() {
