@@ -17,6 +17,8 @@ package com.bjond.soa;
 
 
 
+import java.net.URLEncoder;
+
 import com.bjond.soa.proxy.IRestService;
 import com.google.inject.AbstractModule;
 import com.google.inject.Scopes;
@@ -29,14 +31,11 @@ import com.netflix.discovery.guice.EurekaModule;
 import com.netflix.governator.InjectorBuilder;
 import com.netflix.governator.LifecycleInjector;
 import com.netflix.ribbon.Ribbon;
-import com.netflix.ribbon.RibbonRequest;
 import com.netflix.ribbon.proxy.ProxyLifeCycle;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import io.netty.buffer.ByteBuf;
-
-import rx.Observable;
 
 
 /** <p> Uses Ribbon to ping a service.  </p>
@@ -100,6 +99,21 @@ public class RibbonPing {
         System.out.println("AS ARRAY: " + new String(bytes, "UTF-8"));
         System.out.println("Made a ping invocation successfully.");
 
+
+        // Send an argument. NOTE that you must escape this for query parameters
+        buffer = restService.echo(URLEncoder.encode("hello world","UTF-8")).execute();
+        bytes = new byte[buffer.readableBytes()];
+        buffer.readBytes(bytes);
+        System.out.println("AS ARRAY: " + new String(bytes, "UTF-8"));
+        System.out.println("Made a ping invocation successfully.");
+
+        // You can use query params in POST per usual.
+        buffer = restService.echoPost(URLEncoder.encode("hello POST world","UTF-8")).execute();
+        bytes = new byte[buffer.readableBytes()];
+        buffer.readBytes(bytes);
+        System.out.println("AS ARRAY: " + new String(bytes, "UTF-8"));
+        System.out.println("Made a ping invocation successfully.");
+        
         // finally shutdown
         ((ProxyLifeCycle) restService).shutdown();
         eurekaClient.shutdown();

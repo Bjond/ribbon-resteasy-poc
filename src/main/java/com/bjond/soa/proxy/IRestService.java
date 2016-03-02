@@ -18,6 +18,7 @@ package com.bjond.soa.proxy;
 import com.netflix.ribbon.RibbonRequest;
 import com.netflix.ribbon.proxy.annotation.Http;
 import com.netflix.ribbon.proxy.annotation.Http.HttpMethod;
+import com.netflix.ribbon.proxy.annotation.Var;
 
 import io.netty.buffer.ByteBuf;
 
@@ -29,10 +30,22 @@ import io.netty.buffer.ByteBuf;
  */
 
 public interface IRestService {
-      @Http(
+    @Http(
           method = HttpMethod.GET,
           uri = "/bjond-resteasy-poc/services/poc/ping"
           )
-
           RibbonRequest<ByteBuf> ping();
+    
+    @Http(
+          method = HttpMethod.GET,
+          uri = "/bjond-resteasy-poc/services/poc/echo?value={value}"
+          )
+          RibbonRequest<ByteBuf> echo(@Var("value") String value);
+
+    @Http(
+          method = HttpMethod.POST,
+          uri = "/bjond-resteasy-poc/services/poc/postecho?value={value}"
+          )
+          RibbonRequest<ByteBuf> echoPost(@Var("value") String value);
+    
 }

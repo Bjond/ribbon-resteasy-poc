@@ -19,8 +19,11 @@ package com.bjond.soa.rest;
 import javax.annotation.Resource;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -53,5 +56,21 @@ public class RestService {
         log.info("Ping invoked with SessionContext {}", sc.toString());
         return Response.ok("Ping").type(MediaType.APPLICATION_JSON_TYPE).build();
     }
-        
+
+    @GET
+    @Path("/echo")
+    public Response echo(@NotNull(message="the value must not be null") @QueryParam("value") final String value) {
+
+        log.info("echo invoked with SessionContext {}", sc.toString());
+        return Response.ok(value).type(MediaType.APPLICATION_JSON_TYPE).build();
+    }
+
+    @POST
+    @Path("/postecho")
+    public Response echoPost(@NotNull(message="the value must not be null") @QueryParam("value") final String value) {
+
+        log.info("echoPost invoked with SessionContext {}", sc.toString());
+        return Response.ok(value).type(MediaType.APPLICATION_JSON_TYPE).build();
+    }
+    
 }
