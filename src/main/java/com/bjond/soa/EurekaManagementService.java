@@ -56,7 +56,7 @@ public class EurekaManagementService {
                 
     @PostConstruct
     protected  void startService() {
-        configInstance         = com.netflix.config.DynamicPropertyFactory.getInstance();
+        configInstance = com.netflix.config.DynamicPropertyFactory.getInstance();
 
         final LifecycleInjector injector = InjectorBuilder
             .fromModule(new EurekaModule())
@@ -71,23 +71,17 @@ public class EurekaManagementService {
             .createInjector();
 
         final EurekaClient eurekaClient = injector.getInstance(EurekaClient.class);
-        
-        ApplicationInfoManager applicationInfoManager = injector.getInstance(ApplicationInfoManager.class);
+        final ApplicationInfoManager applicationInfoManager = injector.getInstance(ApplicationInfoManager.class);
 
         // A good practice is to register as STARTING and only change status to UP
         // after the service is ready to receive traffic
         System.out.println("Registering service to eureka with STARTING status");
         applicationInfoManager.setInstanceStatus(InstanceInfo.InstanceStatus.STARTING);
 
-        log.info("Simulating service initialization by sleeping for 2 seconds...");
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            // Nothing
-        }
-
+        // If you need to do some slower startup stuff perform that work HERE.
+        // Only once finished set the status to UP.
+        
         // Now we change our status to UP
-        log.info("Done sleeping, now changing status to UP");
         applicationInfoManager.setInstanceStatus(InstanceInfo.InstanceStatus.UP);
         waitForRegistrationWithEureka(eurekaClient);
         log.info("Service started and ready to process requests..");
@@ -120,7 +114,7 @@ public class EurekaManagementService {
             try {
                 nextServerInfo = eurekaClient.getNextServerFromEureka(vipAddress, false);
             } catch (Throwable e) {
-                // log.error("error", e);
+                // Taken from the example code. I have no idea why you have this pattern.
                 log.info("Waiting ... verifying service registration with eureka ...");
 
                 try {

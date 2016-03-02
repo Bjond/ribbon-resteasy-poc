@@ -1,4 +1,4 @@
-/*  Copyright (c) 2014
+/*  Copyright (c) 2016
  *  by Bjönd Health, Inc., Boston, MA
  *
  *  This software is furnished under a license and may be used only in
