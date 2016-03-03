@@ -62,12 +62,12 @@ You should see some lines like the following:
 
 ```
 
-That's it! The source code is mercifully short. It demonstrates a very basic method invocations (no observers) and retrieval and sending of data over the wire
+That's it! The source code is mercifully short. It demonstrates very basic method invocation (no observers) ,retrieval and sending of data over the wire synchronously 
 with a Ribbon interface. UTF-8 is always used. URL encoding will be required and is demonstrated and lastly I use query parameters everywhere _even_ for POST's.
 
-This truely demonstrates the _basics_ with the _non-deprecated_ classes.
+This truely demonstrates the basics with the _non-deprecated_ classes.
 
-Do note the ribbon-resteasy-poc/src/main/resources/eureka-client.properties which is _critical_ for the proper construction of the examples. This is not well documented.
+Do note the ribbon-resteasy-poc/src/main/resources/eureka-client.properties that is _critical_ for the proper construction of the examples. This is not well documented.
 Note _specifically_ the registration of the IRestService properties with a VIPAddress.
 
 
