@@ -19,6 +19,7 @@ package com.bjond.soa;
 
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
+import java.util.List;
 
 import com.bjond.soa.proxy.IRestService;
 import com.google.inject.AbstractModule;
@@ -38,8 +39,6 @@ import com.netflix.ribbon.http.HttpRequestTemplate;
 import com.netflix.ribbon.http.HttpResourceGroup;
 import com.netflix.ribbon.proxy.ProxyLifeCycle;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 import io.netty.buffer.ByteBuf;
 
 
@@ -54,8 +53,6 @@ import io.netty.buffer.ByteBuf;
 //@Slf4j
 public class RibbonPing {
 
-    
-    @SuppressFBWarnings(value="DLS_DEAD_LOCAL_STORE", justification="")
     public static void main(String[] args) throws Exception {
         System.out.println("RibbonPing has been invoked printf");
 
@@ -76,18 +73,13 @@ public class RibbonPing {
             .createInjector();
 
         // this is the vip address for the example service to talk to as defined in conf/sample-eureka-service.properties
-        String vipAddress = "sampleservice.mydomain.net";
-
+        final String vipAddress = "sampleservice.mydomain.net";
         final EurekaClient eurekaClient = injector.getInstance(EurekaClient.class);
-        InstanceInfo nextServerInfo = null;
-        try {
-            nextServerInfo = eurekaClient.getNextServerFromEureka(vipAddress, false);
-        } catch (Exception e) {
-            System.err.println("Cannot get an instance of example service to talk to from eureka: "+ e.getMessage());
-            System.exit(-1);
-        }
 
 
+        // This is the line that gathers the list of N number of service URL's for vipAddress.
+        final List<InstanceInfo> listOfInstanceInfo = eurekaClient.getInstancesByVipAddress(vipAddress, false);
+        final InstanceInfo nextServerInfo = listOfInstanceInfo.get(0); // I happen to know there is only one for this test thus I cheat here.
 
         
         System.out.println("Found an instance of example service to talk to from eureka: " + nextServerInfo.getVIPAddress() + ":" + nextServerInfo.getPort());
@@ -95,7 +87,8 @@ public class RibbonPing {
         System.out.println("healthCheckUrl: " + nextServerInfo.getHealthCheckUrl());
         System.out.println("override: " + nextServerInfo.getOverriddenStatus());
         System.out.println("hostname: " + nextServerInfo.getHostName());
-
+        System.out.println("InstanceInfo: " + nextServerInfo.toString());
+        System.out.println("List<InstanceInfo>: " + listOfInstanceInfo.toString());        
         System.out.println("RibbonPing has made contact with the Eureka Server");
 
 
@@ -137,8 +130,11 @@ public class RibbonPing {
 
         // Make an invocation using HTTPResourceGroup.
         // In other words how to perform REST invocations without an annotated proxy.
+
+        // I would need to construct a list of these if I wanted to round robin a number of servers.
+        // The server list is a comma seperated list for additional servers such as: "localhost:8080,localhost:8088"
         final String server = String.format("http://%s:%s", nextServerInfo.getHostName(), nextServerInfo.getPort());
-        final HttpResourceGroup httpResourceGroup = Ribbon.createHttpResourceGroup("sampleservice.mydomain.net",
+        final HttpResourceGroup httpResourceGroup = Ribbon.createHttpResourceGroup(vipAddress,
                                                                                    ClientOptions
                                                                                    .create()
                                                                                    .withMaxAutoRetriesNextServer(3)
@@ -171,8 +167,8 @@ public class RibbonPing {
             .withMetadata()
             .execute();
 
-        buf    = result.content();
-        value  = buf.toString(Charset.forName("UTF-8"));
+        buf   = result.content();
+        value = buf.toString(Charset.forName("UTF-8")); // this toString() trick only works here. Does not work with annotated proxies. Why?
 
         System.out.println("Result: " + value);
         
