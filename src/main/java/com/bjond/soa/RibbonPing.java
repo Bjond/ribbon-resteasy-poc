@@ -18,6 +18,7 @@ package com.bjond.soa;
 
 
 import java.net.URLEncoder;
+import java.nio.charset.Charset;
 
 import com.bjond.soa.proxy.IRestService;
 import com.google.inject.AbstractModule;
@@ -30,7 +31,11 @@ import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.guice.EurekaModule;
 import com.netflix.governator.InjectorBuilder;
 import com.netflix.governator.LifecycleInjector;
+import com.netflix.ribbon.ClientOptions;
 import com.netflix.ribbon.Ribbon;
+import com.netflix.ribbon.RibbonResponse;
+import com.netflix.ribbon.http.HttpRequestTemplate;
+import com.netflix.ribbon.http.HttpResourceGroup;
 import com.netflix.ribbon.proxy.ProxyLifeCycle;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -54,6 +59,10 @@ public class RibbonPing {
     public static void main(String[] args) throws Exception {
         System.out.println("RibbonPing has been invoked printf");
 
+        /////////////////////////////////////////////////////////////////////////
+        //                      Eureka Registry Incantation                    //
+        /////////////////////////////////////////////////////////////////////////
+        
         final LifecycleInjector injector = InjectorBuilder
             .fromModule(new EurekaModule())
             .overrideWith(new AbstractModule() {
@@ -78,15 +87,21 @@ public class RibbonPing {
             System.exit(-1);
         }
 
+
+
         
-        System.out.println("Found an instance of example service to talk to from eureka: "
-                           + nextServerInfo.getVIPAddress() + ":" + nextServerInfo.getPort());
+        System.out.println("Found an instance of example service to talk to from eureka: " + nextServerInfo.getVIPAddress() + ":" + nextServerInfo.getPort());
 
         System.out.println("healthCheckUrl: " + nextServerInfo.getHealthCheckUrl());
         System.out.println("override: " + nextServerInfo.getOverriddenStatus());
         System.out.println("hostname: " + nextServerInfo.getHostName());
 
         System.out.println("RibbonPing has made contact with the Eureka Server");
+
+
+        /////////////////////////////////////////////////////////////////////////
+        //                            Proxy Connection                         //
+        /////////////////////////////////////////////////////////////////////////
         
         IRestService restService = Ribbon.from(IRestService.class);
 
@@ -107,18 +122,71 @@ public class RibbonPing {
 
         // You can use query params in POST per usual.
         buffer = restService.echoPost(URLEncoder.encode("hello POST world","UTF-8")).execute();
+        
         bytes = new byte[buffer.readableBytes()];
         buffer.readBytes(bytes);
         System.out.println("AS ARRAY: " + new String(bytes, "UTF-8"));
         System.out.println("Made a ping invocation successfully.");
         
-        // finally shutdown
+
+
+        /////////////////////////////////////////////////////////////////////////
+        //                           HttpResourceGroup                         //
+        /////////////////////////////////////////////////////////////////////////
+        
+
+        // Make an invocation using HTTPResourceGroup.
+        // In other words how to perform REST invocations without an annotated proxy.
+        final String server = String.format("http://%s:%s", nextServerInfo.getHostName(), nextServerInfo.getPort());
+        final HttpResourceGroup httpResourceGroup = Ribbon.createHttpResourceGroup("sampleservice.mydomain.net",
+                                                                                   ClientOptions
+                                                                                   .create()
+                                                                                   .withMaxAutoRetriesNextServer(3)
+                                                                                   .withConfigurationBasedServerList(server));
+
+        
+        @SuppressWarnings("unchecked")
+        HttpRequestTemplate<ByteBuf> pingByTemplate = httpResourceGroup.newTemplateBuilder("ping", ByteBuf.class)
+            .withMethod("GET")
+            .withUriTemplate("/bjond-resteasy-poc/services/poc/ping")
+            .build();        
+
+        RibbonResponse<ByteBuf> result = pingByTemplate.requestBuilder().build().withMetadata().execute();
+        ByteBuf buf = result.content();
+        String value = buf.toString(Charset.forName("UTF-8"));
+
+        System.out.println("Result: " + value);
+
+
+        @SuppressWarnings("unchecked")
+        HttpRequestTemplate<ByteBuf> echoByTemplate = httpResourceGroup.newTemplateBuilder("echo", ByteBuf.class)
+            .withMethod("GET")
+            .withUriTemplate("/bjond-resteasy-poc/services/poc/echo?value={value}")
+            .build();        
+
+        result = echoByTemplate
+            .requestBuilder()
+            .withRequestProperty("value", URLEncoder.encode("hello template world","UTF-8"))
+            .build()
+            .withMetadata()
+            .execute();
+
+        buf    = result.content();
+        value  = buf.toString(Charset.forName("UTF-8"));
+
+        System.out.println("Result: " + value);
+        
+        
+        /////////////////////////////////////////////////////////////////////////
+        //                                shutdown                             //
+        /////////////////////////////////////////////////////////////////////////
         ((ProxyLifeCycle) restService).shutdown();
         eurekaClient.shutdown();
         injector.shutdown();
         ConfigurationManager.getConfigInstance().clear();
         System.out.println("Shutting down");
 
+        
         // there is some daemon thread presumably in eureka-client I can't find.
         System.exit(0);
     }    
