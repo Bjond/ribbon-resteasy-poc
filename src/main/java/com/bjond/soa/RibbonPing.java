@@ -27,6 +27,7 @@ import com.google.inject.Scopes;
 import com.netflix.appinfo.EurekaInstanceConfig;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.appinfo.providers.MyDataCenterInstanceConfigProvider;
+import com.netflix.client.config.CommonClientConfigKey;
 import com.netflix.config.ConfigurationManager;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.guice.EurekaModule;
@@ -93,10 +94,24 @@ public class RibbonPing {
 
 
         /////////////////////////////////////////////////////////////////////////
+        //                       Programmatic Configuration                    //
+        /////////////////////////////////////////////////////////////////////////
+
+        // The printed properties should correspond to the values set within eureka-client.properties file.
+        final String vipAddressContext =  (String)ConfigurationManager.getConfigInstance().getProperty("IRestService.ribbon.DeploymentContextBasedVipAddresses");
+        System.out.println("vipAddressContext: " + vipAddressContext);
+
+        final String sNIWSServerListClassName =  (String)ConfigurationManager.getConfigInstance().getProperty("IRestService.ribbon.NIWSServerListClassName");        
+        System.out.println("NIWSServerListClassName: " + sNIWSServerListClassName);
+
+        // Let's set the retries for teh IRestService ribbon interface specifically.
+        ConfigurationManager.getConfigInstance().setProperty("IRestService.ribbon.DeploymentContextBasedVipAddresses." + CommonClientConfigKey.MaxAutoRetriesNextServer, "3");
+        
+        /////////////////////////////////////////////////////////////////////////
         //                            Proxy Connection                         //
         /////////////////////////////////////////////////////////////////////////
         
-        IRestService restService = Ribbon.from(IRestService.class);
+        final IRestService restService = Ribbon.from(IRestService.class);
 
         
         ByteBuf buffer = restService.ping().execute();
@@ -142,7 +157,7 @@ public class RibbonPing {
 
         
         @SuppressWarnings("unchecked")
-        HttpRequestTemplate<ByteBuf> pingByTemplate = httpResourceGroup.newTemplateBuilder("ping", ByteBuf.class)
+            final HttpRequestTemplate<ByteBuf> pingByTemplate = httpResourceGroup.newTemplateBuilder("ping", ByteBuf.class)
             .withMethod("GET")
             .withUriTemplate("/bjond-resteasy-poc/services/poc/ping")
             .build();        
@@ -155,7 +170,7 @@ public class RibbonPing {
 
 
         @SuppressWarnings("unchecked")
-        HttpRequestTemplate<ByteBuf> echoByTemplate = httpResourceGroup.newTemplateBuilder("echo", ByteBuf.class)
+            final HttpRequestTemplate<ByteBuf> echoByTemplate = httpResourceGroup.newTemplateBuilder("echo", ByteBuf.class)
             .withMethod("GET")
             .withUriTemplate("/bjond-resteasy-poc/services/poc/echo?value={value}")
             .build();        
