@@ -8,7 +8,7 @@
 
 
 Unfortunatley the examples and documentation for the Netflix OSS service architecture is not well done. The software 
-itself is excellent. It took three days to get this P.O.C. working. Some more time to do so without _deprecation_ warnings provided
+itself is excellent. It took three days to get this P.O.C. working and without _deprecation_ warnings provided
 by their examples. 
 
 This system provides two parts:
@@ -20,7 +20,7 @@ This system provides two parts:
 Now you will need a Eureka Server running. You can find the particulars from here <https://github.com/Netflix/eureka>
 but I will summarize. You will want to download the war (don't bother building it yourself unless you wish to do so)
 and install on a tomcat 8.X installation. Set your tomcat installation for port 9080 so it won't collide with Wildfly 8080.
-I haven't had luck running Eureka on Wildfly FYI. Once you have Eureka running on tomcat you can check it via
+I haven't had luck running Eureka on Wildfly FYI. Once your Eureka service is running on tomcat you can check it via
 this URL <http://localhost:9080/eureka/>.
 
 Once that is done you can perform the following build on this package to produce a war and deploy to your wildlfy 9 server:
@@ -38,7 +38,7 @@ $ ./standalone.sh -b=0.0.0.0
 Once the Wildfly 9 (as of this writing) server is running it will take about 1 minute for the Eureka service to run. Any errors can be viewed from the
 server.log file.
 
-Once you the Eureka Service on _Wildfly_ is registered withthe  Eureka _server on Tomcat_ you are ready to run the Ribbon client.
+Once your Eureka Service on _Wildfly_ is registered with the  Eureka _server on Tomcat_ you are ready to run the Ribbon client.
 
 First it must be built:
 
