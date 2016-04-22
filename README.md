@@ -2,12 +2,12 @@
 
 [![][travis img]][travis]
 
-# bjond-resteasy-poc
+# ribbon-resteasy-poc
 
 ## Proof of concept using RESTEASY, Ribbon and Eureka
 
 
-Unfortunatley the examples and documentation for the Netflix OSS service architecture is not well done. The software 
+Unfortunatley the examples and documentation for the Netflix OSS service architecture are not well done. The software 
 itself is excellent. It took three days to get this P.O.C. working and without _deprecation_ warnings provided
 by their examples. 
 
