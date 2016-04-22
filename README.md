@@ -8,7 +8,7 @@
 
 
 Unfortunatley the examples and documentation for the Netflix OSS service architecture are not well done. The software 
-itself is excellent. It took three days to get this P.O.C. working and without _deprecation_ warnings provided
+itself is excellent. It took three days to get this P.O.C. working and without _deprecation_ warnings produced
 by their examples. 
 
 This system provides two parts:
@@ -23,7 +23,8 @@ and install on a tomcat 8.X installation. Set your tomcat installation for port 
 I haven't had luck running Eureka on Wildfly FYI. Once your Eureka service is running on tomcat you can check it via
 this URL <http://localhost:9080/eureka/>.
 
-Once that is done you can perform the following build on this package to produce a war and deploy to your wildlfy 9 server:
+Once that is done you can perform the following build on this package to produce a war and deploy to your wildlfy 9 server 
+assuming your JBOSS_HOME variable is set properly:
 
 ```shell
 gradle all
